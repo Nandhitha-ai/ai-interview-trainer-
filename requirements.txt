@@ -1,0 +1,9 @@
+streamlit
+pandas
+matplotlib
+speechrecognition
+opencv-python
+transformers
+torch
+googletrans==4.0.0-rc1
+streamlit-authenticator
