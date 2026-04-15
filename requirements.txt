@@ -6,4 +6,4 @@ opencv-python-headless
 transformers
 torch
 googletrans==4.0.0-rc1
-streamlit-authenticator
+streamlit-authenticator==0.2.4
