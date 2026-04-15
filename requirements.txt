@@ -2,7 +2,7 @@ streamlit
 pandas
 matplotlib
 speechrecognition
-opencv-python
+opencv-python-headless
 transformers
 torch
 googletrans==4.0.0-rc1
