@@ -35,9 +35,18 @@ names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 # 1. Hash the passwords correctly
-hashed_passwords = stauth.Hasher(passwords).generate()
+# 1. First, create the Authenticator object (Empty storage)
+authenticator = stauth.Authenticate(
+    {'usernames': {}}, 
+    "interview_app", 
+    "abcdef", 
+    cookie_expiry_days=1
+)
 
-# 2. Create the credentials dictionary
+# 2. Now use it to hash the passwords
+hashed_passwords = authenticator.hasher.hash_passwords(passwords)
+
+# 3. Create the real credentials with the hashed passwords
 credentials = {
     "usernames": {
         usernames[0]: {
@@ -47,14 +56,8 @@ credentials = {
     }
 }
 
-# 3. Initialize the Authenticator
-authenticator = stauth.Authenticate(
-    credentials,
-    "interview_app",
-    "abcdef",
-    cookie_expiry_days=1
-)
-
+# 4. Finally, tell the authenticator to use these real credentials
+authenticator.credentials = credentials
 name, auth_status, username = authenticator.login("Login", "main")
 
 if auth_status != True:
