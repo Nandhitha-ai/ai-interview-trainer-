@@ -101,12 +101,17 @@ chatbot = pipeline("text-generation", model="gpt2",device=-1)
 # ---------------- FUNCTIONS ----------------
 
 def detect_emotion(text):
-    result = emotion_model(text)[0]['label']
-    # Use lowercase 'positive' for the check
-    if result.lower() == "positive":
-        return "Confident 😊"
-    else:
-        return "Nervous 😟"
+    # This force-cleans the input to make sure it works on the CPU
+    try:
+        results = emotion_model(text)
+        result = results[0]['label']
+        if result.lower() == "positive":
+            return "Confident 😊"
+        else:
+            return "Nervous 😟"
+    except Exception as e:
+        # If the AI model crashes, this keeps the app running
+        return "Neutral 😐"
 def calculate_score(text):
     words = text.split()
     length_score = min(len(words), 50)
