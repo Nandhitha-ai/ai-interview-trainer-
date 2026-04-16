@@ -35,7 +35,7 @@ names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 # 1. Hash the passwords correctly
-hashed_passwords = stauth.Hasher.hash_passwords(passwords)
+hashed_passwords = stauth.Hasher(passwords).generate()
 
 # 2. Create the credentials dictionary
 credentials = {
