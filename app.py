@@ -163,10 +163,9 @@ if menu == "🏠 Home":
 
     st.markdown("### 💬 Question")
     st.info(question)
+ answer = st.text_area("Your Answer", height=150)
 
-    answer = st.text_area("Your Answer", height=150)
-
-    col1, col2 = st.columns(2)
+ col1, col2 = st.columns(2)
 
  with col1:
     # Use the new mic recorder instead of the old button
@@ -181,7 +180,7 @@ if menu == "🏠 Home":
         st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
         # below for the AI to analyze it for now.
-    with col2:
+ with col2:
         analyze = st.button("🚀 Analyze")
 
     if analyze and answer:
