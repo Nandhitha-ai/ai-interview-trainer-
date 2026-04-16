@@ -174,15 +174,15 @@ with col1:
         key='recorder'
     )
 
- if audio:
+if audio:
         st.audio(audio['bytes'])
         st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
         # below for the AI to analyze it for now.
- with col2:
+with col2:
         analyze = st.button("🚀 Analyze")
 
- if analyze and answer:
+if analyze and answer:
         processed = to_english(answer)
 
         emotion = detect_emotion(processed)
