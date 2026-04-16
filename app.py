@@ -1,121 +1,253 @@
-import os
-os.environ["TRANSFORMERS_VERBOSITY"] = "ERROR"
-import streamlit as st
-import whisper
 import numpy as np
 import io
 import pydub
+import os
+os.environ["TRANSFORMERS_VERBOSITY"] = "ERROR"
+import streamlit as st
+import random
 import pandas as pd
 import matplotlib.pyplot as plt
+import speech_recognition as sr
+import cv2
+import whisper
+
+# This makes the app load the AI only once
+@st.cache_resource
+def load_my_model():
+    return whisper.load_model("tiny", device="cpu")
+
+whisper_model = load_my_model()
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
 from transformers import pipeline
 
-# --- 1. AI MODEL LOADING ---
-@st.cache_resource
-def load_models():
-    w_model = whisper.load_model("tiny", device="cpu")
-    s_model = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-    return w_model, s_model
+# ---------------- PAGE CONFIG ----------------
+st.set_page_config(
+    page_title="AI Interview Trainer",
+    page_icon="🎤",
+    layout="centered"
+)
 
-whisper_model, sentiment_pipeline = load_models()
+# ---------------- CUSTOM CSS ----------------
+st.markdown("""
+<style>
+body { background-color: #0f172a; }
+.main { color: white; }
+h1, h2, h3 { color: #38bdf8; text-align: center; }
+.stButton>button {
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    color: white;
+    border-radius: 12px;
+    padding: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------- LOGIN ----------------
+names = ["Nandhitha"]
+usernames = ["user1"]
+passwords = ["1234"]
+# 1. Setup the Authenticator first (This is the new way)
+authenticator = stauth.Authenticate(
+    {
+        "usernames": {
+            usernames[0]: {
+                "name": names[0],
+                "password": passwords[0] # The library hashes this for you now!
+            }
+        }
+    },
+    "interview_app",
+    "abcdef",
+    cookie_expiry_days=1
+)
+
+# 2. Now call the login method
+authenticator.login(location='main')
+
+# Then, immediately below it, get the status from session_state
+auth_status = st.session_state.get("authentication_status")
+name = st.session_state.get("name")
+username = st.session_state.get("username")
+if auth_status != True:
+    st.warning("Please login")
+    st.stop()
+
+st.success(f"Welcome {name}")
+
+# ---------------- SIDEBAR ----------------
+st.sidebar.title("🎤 AI Trainer")
+menu = st.sidebar.radio("Navigation",
+                        ["🏠 Home", "📊 Performance", "🤖 Chatbot", "📷 Camera"])
+
+# ---------------- LANGUAGE ----------------
 translator = Translator()
+language = st.selectbox("Language", ["English", "Tamil"])
 
-# --- 2. HELPER FUNCTIONS ---
 def to_english(text):
-    try:
+    if language == "Tamil":
         return translator.translate(text, dest='en').text
-    except:
-        return text
+    return text
+
+def to_tamil(text):
+    if language == "Tamil":
+        return translator.translate(text, dest='ta').text
+    return text
+
+# ---------------- QUESTIONS ----------------
+questions = [
+    "Tell me about yourself",
+    "Why should we hire you?",
+    "What are your strengths?",
+    "Describe a challenge you faced"
+]
+
+# ---------------- AI MODELS ----------------
+#use the smallest possible model for emotion
+emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncased-finetuned-sst-2-english",device=-1)
+#use the smallest possible model for chatbot
+chatbot = pipeline("text-generation", model="gpt2",device=-1)
+
+# ---------------- FUNCTIONS ----------------
 
 def detect_emotion(text):
+    # This force-cleans the input to make sure it works on the CPU
     try:
-        result = sentiment_pipeline(text)[0]
-        label = result['label']
-        score = result['score']
-        emoji = "😊 Positive/Confident" if label == "POSITIVE" else "😟 Negative/Stressed"
-        return f"{emoji} ({score:.1%})"
+        results = emotion_model(text)
+        result = results[0]['label']
+        if result.lower() == "positive":
+            return "Confident 😊"
+        else:
+            return "Nervous 😟"
+    except Exception as e:
+        # If the AI model crashes, this keeps the app running
+        return "Neutral 😐"
+def calculate_score(text):
+    words = text.split()
+    length_score = min(len(words), 50)
+    hesitation_words = ["um", "uh", "like"]
+    hesitation_count = sum(word.lower() in hesitation_words for word in words)
+    return max(length_score - hesitation_count * 2, 0)
+
+def save_data(q, a, e, s):
+    df = pd.DataFrame([[q, a, e, s]],
+                      columns=["Question", "Answer", "Emotion", "Score"])
+    try:
+        old = pd.read_csv("data.csv")
+        df = pd.concat([old, df])
     except:
-        return "Unknown"
+        pass
+    df.to_csv("data.csv", index=False)
 
-# --- 3. BEAUTIFICATION (CSS) ---
-st.markdown("""
-    <style>
-    .main { background-color: #f8f9fa; }
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        background-color: #4CAF50;
-        color: white;
-        height: 3em;
-        font-size: 18px;
-        transition: 0.3s;
-    }
-    .stButton>button:hover { background-color: #45a049; transform: scale(1.02); border: 2px solid white; }
-    div[data-testid="stMetricValue"] { color: #4CAF50; }
-    </style>
-    """, unsafe_allow_html=True)
+def show_graph():
+    try:
+        data = pd.read_csv("data.csv")
+        plt.figure()
+        plt.plot(data["Score"])
+        plt.xlabel("Attempts")
+        plt.ylabel("Score")
+        plt.title("Performance")
+        st.pyplot(plt)
+    except:
+        st.warning("No data yet")
 
-# --- 4. NAVIGATION ---
-with st.sidebar:
-    st.title("🌟 Career Mentor AI")
-    menu = st.radio("Navigation", ["🏠 Interview Prep", "📊 Performance", "🤖 AI Chatbot", "📷 Camera Check"])
-    st.divider()
-    st.info("Tip: After recording, click 'Analyze Now' to see your results.")
+def voice_input():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("Speak now...")
+        audio = r.listen(source)
+    try:
+        return r.recognize_google(audio)
+    except:
+        return "Could not understand"
 
-# --- 5. APP FEATURES ---
+def chatbot_reply(text):
+    prompt = "You are a professional interviewer.\nUser: " + text
+    response = chatbot(prompt, max_length=100)
+    return response[0]['generated_text']
 
-if menu == "🏠 Interview Prep":
-    st.title("🎙️ Smart Interview Trainer")
+def start_camera():
+    cap = cv2.VideoCapture(0)
+    st.info("Press Q to exit")
+    while True:
+        ret, frame = cap.read()
+        cv2.imshow("Camera", frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+
+# ---------------- HOME ----------------
+if menu == "🏠 Home":
+
+    st.title("🎤 AI Interview Trainer")
+    question = random.choice(questions)
+
+    st.markdown("### 💬 Question")
+    st.info(question)
+    answer = st.text_area("Your Answer",value=st.session_state.get('answe',""),height=150)
     col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Step 1: Record")
-        audio = mic_recorder(start_prompt="Start Recording 🎙️", stop_prompt="Stop 🛑", key='recorder')
 
-    if audio:
-        st.audio(audio['bytes'])
-        with st.spinner("Transcribing..."):
-            audio_data = io.BytesIO(audio['bytes'])
-            audio_segment = pydub.AudioSegment.from_file(audio_data)
-            audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
-            samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
-            result = whisper_model.transcribe(samples)
-            st.session_state.answer = result["text"]
-        st.success("✅ Recorded!")
+with col1:
+    # Use the new mic recorder instead of the old button
+    audio = mic_recorder(
+        start_prompt="START RECORDING 🎙️",
+        stop_prompt="STOP 🛑",
+        key='recorder'
+    )
+    # --- Transcription ---
+if audio:
+    st.audio(audio['bytes'])
+    with st.spinner("Transcribing your voice..."):
+        audio_data = io.BytesIO(audio['bytes'])
+        audio_segment = pydub.AudioSegment.from_file(audio_data)
+        audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
+        samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
+        
+        result = whisper_model.transcribe(samples)
+        # This saves the text for the Analyze button
+        st.session_state.answer = result["text"]
+        
+    st.success("Transcription complete!")
+    st.info(f"Captured Text: {st.session_state.answer}")
 
-    with col2:
-        st.subheader("Step 2: Analyze")
-        if st.button("🚀 Analyze Now"):
-            final_text = st.session_state.get('answer', "")
-            if final_text:
-                with st.spinner("Analyzing tone..."):
-                    english_text = to_english(final_text)
-                    emotion_result = detect_emotion(english_text)
-                    st.metric("Tone Assessment", emotion_result)
-                    with st.expander("Show Detailed Transcription"):
-                        st.write(f"**English:** {english_text}")
-            else:
-                st.warning("Please record audio first.")
+# --- Analysis Button ---
+with col2:
+    if st.button("🚀 Analyze"):
+        # Check if we have text saved in the "sticky note"
+        final_text = st.session_state.get('answer', "")
+        
+        if final_text:
+            with st.spinner("Analyzing your response..."):
+                processed = to_english(final_text)
+                emotion = detect_emotion(processed)
+                
+                st.subheader("Results")
+                st.write(f"**English Translation:** {processed}")
+                st.write(f"**Detected Emotion:** {emotion}")
+                st.success("Analysis complete!")
+        else:
+            st.warning("Please record your audio first!")
 
+        # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
-    st.title("📈 Performance Tracking")
-    chart_data = pd.DataFrame({'Session': [1, 2, 3, 4], 'Score': [40, 65, 55, 80]})
-    st.line_chart(chart_data.set_index('Session'))
+    st.title("📈 Performance Dashboard")
+    show_graph()
 
-elif menu == "🤖 AI Chatbot":
-    st.title("🤖 Interview Coach Chat")
-    if "messages" not in st.session_state: st.session_state.messages = []
-    for m in st.session_state.messages:
-        with st.chat_message(m["role"]): st.markdown(m["content"])
-    if prompt := st.chat_input("Ask for advice..."):
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"): st.markdown(prompt)
-        reply = f"Focus on using the STAR method for that!"
-        with st.chat_message("assistant"): st.markdown(reply)
-        st.session_state.messages.append({"role": "assistant", "content": reply})
+# ---------------- CHATBOT ----------------
+elif menu == "🤖 Chatbot":
+    st.title("🤖 AI Interviewer")
 
-elif menu == "📷 Camera Check":
-    st.title("📷 Posture & Eye Contact")
-    photo = st.camera_input("Check your framing")
+    user_input = st.text_input("Ask something")
+
+    if st.button("Send"):
+        reply = chatbot_reply(user_input)
+        st.write("👔 Interviewer:", reply)
+
+# ---------------- CAMERA ----------------
+elif menu == "📷 Camera":
+    st.title("📷 Face Detection")
+
+    if st.button("Start Camera"):
+        start_camera()
