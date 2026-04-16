@@ -1,3 +1,6 @@
+import numpy as np
+import io
+import pydub
 import os
 os.environ["TRANSFORMERS_VERBOSITY"] = "ERROR"
 import streamlit as st
@@ -13,7 +16,8 @@ import whisper
 def load_my_model():
     return whisper.load_model("tiny", device="cpu")
 
-whisper_model = load_my_model()import streamlit_authenticator as stauth
+whisper_model = load_my_model()
+import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
 from transformers import pipeline
@@ -192,51 +196,40 @@ with col1:
         stop_prompt="STOP 🛑",
         key='recorder'
     )
-
-import numpy as np
-import io
-import pydub
-
-# --- Transcription Logic ---
+    # --- Transcription ---
 if audio:
     st.audio(audio['bytes'])
-    
     with st.spinner("Transcribing your voice..."):
-        # Convert raw bytes to a format the AI understands
         audio_data = io.BytesIO(audio['bytes'])
         audio_segment = pydub.AudioSegment.from_file(audio_data)
-        
-        # Whisper works best at 16kHz
         audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
         samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
         
-        # Save transcription to session_state so the Analyze button can see it
         result = whisper_model.transcribe(samples)
+        # This saves the text for the Analyze button
         st.session_state.answer = result["text"]
         
     st.success("Transcription complete!")
     st.info(f"Captured Text: {st.session_state.answer}")
 
-# --- Analysis Logic ---
+# --- Analysis Button ---
 with col2:
-    analyze = st.button("🚀 Analyze")
+    if st.button("🚀 Analyze"):
+        # Check if we have text saved in the "sticky note"
+        final_text = st.session_state.get('answer', "")
+        
+        if final_text:
+            with st.spinner("Analyzing your response..."):
+                processed = to_english(final_text)
+                emotion = detect_emotion(processed)
+                
+                st.subheader("Results")
+                st.write(f"**English Translation:** {processed}")
+                st.write(f"**Detected Emotion:** {emotion}")
+                st.success("Analysis complete!")
+        else:
+            st.warning("Please record your audio first!")
 
-# This part must be perfectly lined up (not indented)
-if analyze:
-    # We look for the 'answer' we saved during recording
-    final_text = st.session_state.get('answer', "")
-    
-    if final_text:
-        with st.spinner("Analyzing your response..."):
-            processed = to_english(final_text)
-            emotion = detect_emotion(processed)
-            
-            st.subheader("Results")
-            st.write(f"**English Translation:** {processed}")
-            st.write(f"**Detected Emotion:** {emotion}")
-            st.success("Analysis complete!")
-    else:
-        st.warning("Please record your audio first!")    
         # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
     st.title("📈 Performance Dashboard")
