@@ -165,7 +165,7 @@ if menu == "🏠 Home":
     st.info(question)
     answer = st.text_area("Your Answer", height=150)
 
- col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
  with col1:
     # Use the new mic recorder instead of the old button
