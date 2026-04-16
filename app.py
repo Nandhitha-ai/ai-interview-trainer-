@@ -7,7 +7,12 @@ import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
 import whisper
-whisper_model = whisper.load_model("base",device="cpu")
+# We use @st.cache_resource so the AI only loads ONCE. This makes the app much faster!
+@st.cache_resource
+def load_my_model():
+    return whisper.load_model("tiny", device="cpu")
+
+whisper_model = load_my_model()
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
