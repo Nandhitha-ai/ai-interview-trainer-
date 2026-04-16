@@ -163,7 +163,7 @@ if menu == "🏠 Home":
 
     st.markdown("### 💬 Question")
     st.info(question)
- answer = st.text_area("Your Answer", height=150)
+    answer = st.text_area("Your Answer", height=150)
 
  col1, col2 = st.columns(2)
 
