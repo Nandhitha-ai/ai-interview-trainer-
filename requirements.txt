@@ -10,3 +10,5 @@ torchvision --index-url https://download.pytorch.org/whl/cpu
 streamlit-mic-recorder
 openai-whisper
 setuptools
+pydub
+numpy
