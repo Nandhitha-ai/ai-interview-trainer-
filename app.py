@@ -1,3 +1,5 @@
+import os
+os.environ["TRANSFORMERS_VERBOSITY"]="ERROR"
 import streamlit as st
 import random
 import pandas as pd
@@ -91,12 +93,13 @@ questions = [
 ]
 
 # ---------------- AI MODELS ----------------
-emotion_model = pipeline("sentiment-analysis",device=-1)
+emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncases-finetuned-sst-2-english",device=-1)
 chatbot = pipeline("text-generation", model="gpt2",device=-1)
 
 # ---------------- FUNCTIONS ----------------
 
 def detect_emotion(text):
+    #this force-clears any hardware confusion
     result = emotion_model(text)[0]['label']
     return "Confident 😊" if result == "POSITIVE" else "Nervous 😟"
 
