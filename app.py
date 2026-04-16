@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
 import streamlit_authenticator as stauth
+from streamlit_mic_recorder
+import mic_recorder
 from googletrans import Translator
 from transformers import pipeline
 
@@ -167,11 +169,19 @@ if menu == "🏠 Home":
 
     col1, col2 = st.columns(2)
 
-    with col1:
-        if st.button("🎤 Speak"):
-            answer = voice_input()
-            st.write("You said:", answer)
+ with col1:
+    # Use the new mic recorder instead of the old button
+    audio = mic_recorder(
+        start_prompt="START RECORDING 🎙️",
+        stop_prompt="STOP 🛑",
+        key='recorder'
+    )
 
+    if audio:
+        st.audio(audio['bytes'])
+        st.success(to_tamil("Audio recorded successfully!"))
+        # Note: You still need to type the answer in the text box 
+        # below for the AI to analyze it for now.
     with col2:
         analyze = st.button("🚀 Analyze")
 
