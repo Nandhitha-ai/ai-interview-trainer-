@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
 import whisper
-whisper_model= whisper.load_model("base")
+whisper_model= whisper.load_model("base",device="cpu")
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
