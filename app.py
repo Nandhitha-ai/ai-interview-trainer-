@@ -93,16 +93,20 @@ questions = [
 ]
 
 # ---------------- AI MODELS ----------------
-emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncases-finetuned-sst-2-english",device=-1)
+#use the smallest possible model for emotion
+emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncased-finetuned-sst-2-english",device=-1)
+#use the smallest possible model for chatbot
 chatbot = pipeline("text-generation", model="gpt2",device=-1)
 
 # ---------------- FUNCTIONS ----------------
 
 def detect_emotion(text):
-    #this force-clears any hardware confusion
     result = emotion_model(text)[0]['label']
-    return "Confident 😊" if result == "POSITIVE" else "Nervous 😟"
-
+    # Use lowercase 'positive' for the check
+    if result.lower() == "positive":
+        return "Confident 😊"
+    else:
+        return "Nervous 😟"
 def calculate_score(text):
     words = text.split()
     length_score = min(len(words), 50)
