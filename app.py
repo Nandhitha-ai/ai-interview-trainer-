@@ -175,7 +175,7 @@ if menu == "🏠 Home":
         key='recorder'
     )
 
-    if audio:
+ if audio:
         st.audio(audio['bytes'])
         st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
@@ -183,7 +183,7 @@ if menu == "🏠 Home":
  with col2:
         analyze = st.button("🚀 Analyze")
 
-    if analyze and answer:
+ if analyze and answer:
         processed = to_english(answer)
 
         emotion = detect_emotion(processed)
