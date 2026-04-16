@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
 import whisper
+whisper_model= whisper.load_model("base")
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
@@ -192,7 +193,7 @@ if audio:
    # Automatic transcription
    with st.spinner("Transcribing your voice..."):
         #ensure audio is paused correctly to the model
-        result = whisper_model.transcribe(audio['bytes'])
+        result = model.transcribe(audio['bytes'])
         st.session_state.answer = result["text"]
    st.success("Transcription complete! Check the text box above.")
    st.success(to_tamil("Audio recorded successfully!"))
