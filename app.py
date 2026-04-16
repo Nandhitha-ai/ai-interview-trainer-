@@ -50,7 +50,12 @@ authenticator = stauth.Authenticate(
 )
 
 # 2. Now call the login method
-name, auth_status, username = authenticator.login(location='main')
+authenticator.login(location='main')
+
+# Then, immediately below it, get the status from session_state
+auth_status = st.session_state.get("authentication_status")
+name = st.session_state.get("name")
+username = st.session_state.get("username")
 if auth_status != True:
     st.warning("Please login")
     st.stop()
