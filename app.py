@@ -6,7 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
-import whispeer
+import whisper
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
