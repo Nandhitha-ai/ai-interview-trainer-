@@ -221,26 +221,23 @@ if audio:
 with col2:
     analyze = st.button("🚀 Analyze")
 
+# This part must be perfectly lined up (not indented)
 if analyze:
-    # Check if we have text from recording OR from the manual text box
-    # 'answer' refers to your text_input key if you named it that
+    # We look for the 'answer' we saved during recording
     final_text = st.session_state.get('answer', "")
     
     if final_text:
         with st.spinner("Analyzing your response..."):
-            # Process the text
             processed = to_english(final_text)
             emotion = detect_emotion(processed)
             
-            # Show Results
             st.subheader("Results")
             st.write(f"**English Translation:** {processed}")
             st.write(f"**Detected Emotion:** {emotion}")
-            
-            # Add your feedback logic here
             st.success("Analysis complete!")
     else:
-        st.warning("Please record audio or type an answer first!")# ---------------- PERFORMANCE ----------------
+        st.warning("Please record your audio first!")    
+        # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
     st.title("📈 Performance Dashboard")
     show_graph()
