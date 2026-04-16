@@ -34,12 +34,25 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
+# 1. Hash the passwords correctly
+hashed_passwords = stauth.Hasher.hash_passwords(passwords)
 
-hashed_passwords = stauth.Hasher(passwords).hash()
+# 2. Create the credentials dictionary
+credentials = {
+    "usernames": {
+        usernames[0]: {
+            "name": names[0],
+            "password": hashed_passwords[0]
+        }
+    }
+}
 
+# 3. Initialize the Authenticator
 authenticator = stauth.Authenticate(
-    names, usernames, hashed_passwords,
-    "interview_app", "abcdef", cookie_expiry_days=1
+    credentials,
+    "interview_app",
+    "abcdef",
+    cookie_expiry_days=1
 )
 
 name, auth_status, username = authenticator.login("Login", "main")
