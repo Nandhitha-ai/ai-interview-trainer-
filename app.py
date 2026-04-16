@@ -195,7 +195,7 @@ if audio:
         result = whisper_model.transcribe(audio['bytes'])
         st.session_state.answer = result["text"]
    st.success("Transcription complete! Check the text box above.")
-        st.success(to_tamil("Audio recorded successfully!"))
+   st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
         # below for the AI to analyze it for now.
 with col2:
