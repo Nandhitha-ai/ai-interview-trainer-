@@ -193,16 +193,29 @@ with col1:
         key='recorder'
     )
 
+import numpy as np
+import io
+import pydub
+
 if audio:
-   st.audio(audio['bytes'])
-   # Automatic transcription
-   with st.spinner("Transcribing your voice..."):
-        #ensure audio is paused correctly to the model
-        result = whisper_model.transcribe(audio['bytes'])
+    st.audio(audio['bytes'])
+    
+    with st.spinner("Transcribing your voice..."):
+        # This converts the raw audio bytes into a format the AI can understand
+        audio_data = io.BytesIO(audio['bytes'])
+        audio_segment = pydub.AudioSegment.from_file(audio_data)
+        
+        # We must set it to 16kHz for the Whisper model to work correctly
+        audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
+        samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
+        
+        # Now we use 'samples' instead of 'audio['bytes']'
+        result = whisper_model.transcribe(samples)
         st.session_state.answer = result["text"]
-   st.success("Transcription complete! Check the text box above.")
-   st.success(to_tamil("Audio recorded successfully!"))
-        # Note: You still need to type the answer in the text box 
+        
+    st.success("Transcription complete!")
+    st.success(to_tamil("Audio recorded successfully!"))
+    # Note: You still need to type the answer in the text box 
         # below for the AI to analyze it for now.
 with col2:
         analyze = st.button("🚀 Analyze")
