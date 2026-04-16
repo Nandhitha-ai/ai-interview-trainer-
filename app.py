@@ -193,7 +193,7 @@ if audio:
    with st.spinner("Transcribing your voice..."):
         #ensure audio is paused correctly to the model
         result = whisper_model.transcribe(audio['bytes'])
-        st.session_state.answer = result["text"].
+        st.session_state.answer = result["text"]
    st.success("Transcription complete! Check the text box above.")
         st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
