@@ -8,4 +8,6 @@ googletrans==4.0.0-rc1
 transformers
 torch
 streamlit-mic-recorder
+openai-whisper
+setuptools
 
