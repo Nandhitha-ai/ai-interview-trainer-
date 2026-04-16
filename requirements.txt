@@ -5,9 +5,9 @@ opencv-python-headless
 streamlit-authenticator
 googletrans==4.0.0-rc1
 transformers
-torch==2.1.2
-torchvision==0.16.2
+torch
+torchvision
 streamlit-mic-recorder
-openai-whisper==20231117
+openai-whisper
 setuptools
 
