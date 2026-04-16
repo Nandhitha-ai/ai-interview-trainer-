@@ -12,10 +12,9 @@ from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
 from transformers import pipeline
 
-# --- 1. AI MODEL LOADING & SETUP ---
+# --- 1. AI MODEL LOADING ---
 @st.cache_resource
 def load_models():
-    # Using 'tiny' to prevent memory crashes on Streamlit Cloud
     w_model = whisper.load_model("tiny", device="cpu")
     s_model = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
     return w_model, s_model
@@ -25,14 +24,12 @@ translator = Translator()
 
 # --- 2. HELPER FUNCTIONS ---
 def to_english(text):
-    """Translates input to English for consistent analysis."""
     try:
         return translator.translate(text, dest='en').text
     except:
         return text
 
 def detect_emotion(text):
-    """Detects tone and returns a formatted result."""
     try:
         result = sentiment_pipeline(text)[0]
         label = result['label']
@@ -55,7 +52,7 @@ st.markdown("""
         font-size: 18px;
         transition: 0.3s;
     }
-    .stButton>button:hover { background-color: #45a049; transform: scale(1.02); }
+    .stButton>button:hover { background-color: #45a049; transform: scale(1.02); border: 2px solid white; }
     div[data-testid="stMetricValue"] { color: #4CAF50; }
     </style>
     """, unsafe_allow_html=True)
@@ -65,16 +62,12 @@ with st.sidebar:
     st.title("🌟 Career Mentor AI")
     menu = st.radio("Navigation", ["🏠 Interview Prep", "📊 Performance", "🤖 AI Chatbot", "📷 Camera Check"])
     st.divider()
-    if st.button("Logout"):
-        st.write("Logged out successfully.")
+    st.info("Tip: After recording, click 'Analyze Now' to see your results.")
 
 # --- 5. APP FEATURES ---
 
-# FEATURE: INTERVIEW PREP
 if menu == "🏠 Interview Prep":
     st.title("🎙️ Smart Interview Trainer")
-    st.info("Record your response to a question, and I'll analyze your delivery.")
-    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -84,13 +77,10 @@ if menu == "🏠 Interview Prep":
     if audio:
         st.audio(audio['bytes'])
         with st.spinner("Transcribing..."):
-            # Process Audio Bytes
             audio_data = io.BytesIO(audio['bytes'])
             audio_segment = pydub.AudioSegment.from_file(audio_data)
             audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
             samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
-            
-            # Transcribe
             result = whisper_model.transcribe(samples)
             st.session_state.answer = result["text"]
         st.success("✅ Recorded!")
@@ -103,34 +93,29 @@ if menu == "🏠 Interview Prep":
                 with st.spinner("Analyzing tone..."):
                     english_text = to_english(final_text)
                     emotion_result = detect_emotion(english_text)
-                    
                     st.metric("Tone Assessment", emotion_result)
                     with st.expander("Show Detailed Transcription"):
-                        st.write(f"**Original:** {final_text}")
                         st.write(f"**English:** {english_text}")
             else:
                 st.warning("Please record audio first.")
 
-# FEATURE: PERFORMANCE
 elif menu == "📊 Performance":
     st.title("📈 Performance Tracking")
     chart_data = pd.DataFrame({'Session': [1, 2, 3, 4], 'Score': [40, 65, 55, 80]})
     st.line_chart(chart_data.set_index('Session'))
-    st.write("Great job! Your confidence is trending upwards.")
 
-# FEATURE: CHATBOT
 elif menu == "🤖 AI Chatbot":
     st.title("🤖 Interview Coach Chat")
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    
+    if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-
     if prompt := st.chat_input("Ask for advice..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
-        
-        reply = f"To answer '{prompt}', try the STAR method (Situation, Task, Action, Result)!"
+        reply = f"Focus on using the STAR method for that!"
         with st.chat_message("assistant"): st.markdown(reply)
-        st.session_state.messages.append({"role":
+        st.session_state.messages.append({"role": "assistant", "content": reply})
+
+elif menu == "📷 Camera Check":
+    st.title("📷 Posture & Eye Contact")
+    photo = st.camera_input("Check your framing")
