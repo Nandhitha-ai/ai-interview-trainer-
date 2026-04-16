@@ -1,7 +1,6 @@
 streamlit
 pandas
 matplotlib
-SpeechRecognition
 opencv-python-headless
 streamlit-authenticator
 googletrans==4.0.0-rc1
