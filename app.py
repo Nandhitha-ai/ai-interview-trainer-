@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
+import whispeer
 import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
@@ -175,7 +176,7 @@ if menu == "🏠 Home":
 
     st.markdown("### 💬 Question")
     st.info(question)
-    answer = st.text_area("Your Answer", height=150)
+    answer = st.text_area("Your Answer",value=st.session_state.get('answe',""),height=150)
     col1, col2 = st.columns(2)
 
 with col1:
@@ -187,7 +188,13 @@ with col1:
     )
 
 if audio:
-        st.audio(audio['bytes'])
+   st.audio(audio['bytes'])
+   # Automatic transcription
+   with st.spinner("Transcribing your voice..."):
+        #ensure audio is paused correctly to the model
+        result = whisper_model.transcribe(audio['bytes'])
+        st.session_state.answer = result["text"].
+   st.success("Transcription complete! Check the text box above.")
         st.success(to_tamil("Audio recorded successfully!"))
         # Note: You still need to type the answer in the text box 
         # below for the AI to analyze it for now.
