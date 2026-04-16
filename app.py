@@ -34,32 +34,23 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
-# 1. Hash the passwords correctly
-# 1. First, create the Authenticator object (Empty storage)
+# 1. Setup the Authenticator first (This is the new way)
 authenticator = stauth.Authenticate(
-    {'usernames': {}}, 
-    "interview_app", 
-    "abcdef", 
+    {
+        "usernames": {
+            usernames[0]: {
+                "name": names[0],
+                "password": passwords[0] # The library hashes this for you now!
+            }
+        }
+    },
+    "interview_app",
+    "abcdef",
     cookie_expiry_days=1
 )
 
-# 2. Now use it to hash the passwords
-hashed_passwords = authenticator.hasher(passwords)
-
-# 3. Create the real credentials with the hashed passwords
-credentials = {
-    "usernames": {
-        usernames[0]: {
-            "name": names[0],
-            "password": hashed_passwords[0]
-        }
-    }
-}
-
-# 4. Finally, tell the authenticator to use these real credentials
-authenticator.credentials = credentials
+# 2. Now call the login method
 name, auth_status, username = authenticator.login("Login", "main")
-
 if auth_status != True:
     st.warning("Please login")
     st.stop()
