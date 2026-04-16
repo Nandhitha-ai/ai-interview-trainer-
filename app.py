@@ -1,5 +1,5 @@
 import os
-os.environ["TRANSFORMERS_VERBOSITY"]="ERROR"
+os.environ["TRANSFORMERS_VERBOSITY"] = "ERROR"
 import streamlit as st
 import random
 import pandas as pd
@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
 import whisper
-# We use @st.cache_resource so the AI only loads ONCE. This makes the app much faster!
+
+# This makes the app load the AI only once
 @st.cache_resource
 def load_my_model():
     return whisper.load_model("tiny", device="cpu")
 
-whisper_model = load_my_model()
-import streamlit_authenticator as stauth
+whisper_model = load_my_model()import streamlit_authenticator as stauth
 from streamlit_mic_recorder import mic_recorder
 from googletrans import Translator
 from transformers import pipeline
@@ -197,47 +197,50 @@ import numpy as np
 import io
 import pydub
 
+# --- Transcription Logic ---
 if audio:
     st.audio(audio['bytes'])
     
     with st.spinner("Transcribing your voice..."):
-        # This converts the raw audio bytes into a format the AI can understand
+        # Convert raw bytes to a format the AI understands
         audio_data = io.BytesIO(audio['bytes'])
         audio_segment = pydub.AudioSegment.from_file(audio_data)
         
-        # We must set it to 16kHz for the Whisper model to work correctly
+        # Whisper works best at 16kHz
         audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
         samples = np.array(audio_segment.get_array_of_samples()).astype(np.float32) / 32768.0
         
-        # Now we use 'samples' instead of 'audio['bytes']'
+        # Save transcription to session_state so the Analyze button can see it
         result = whisper_model.transcribe(samples)
         st.session_state.answer = result["text"]
         
     st.success("Transcription complete!")
-    st.success(to_tamil("Audio recorded successfully!"))
-    # Note: You still need to type the answer in the text box 
-        # below for the AI to analyze it for now.
+    st.info(f"Captured Text: {st.session_state.answer}")
+
+# --- Analysis Logic ---
 with col2:
-        analyze = st.button("🚀 Analyze")
+    analyze = st.button("🚀 Analyze")
 
-if analyze and answer:
-        processed = to_english(answer)
-
-        emotion = detect_emotion(processed)
-        score = calculate_score(processed)
-
-        st.markdown("### 📊 Result")
-        st.success(f"Emotion: {to_tamil(emotion)}")
-        st.info(f"Score: {score}")
-
-        if score < 20:
-            st.warning("Improve your answer")
-        else:
-            st.success("Good job!")
-
-        save_data(question, answer, emotion, score)
-
-# ---------------- PERFORMANCE ----------------
+if analyze:
+    # Check if we have text from recording OR from the manual text box
+    # 'answer' refers to your text_input key if you named it that
+    final_text = st.session_state.get('answer', "")
+    
+    if final_text:
+        with st.spinner("Analyzing your response..."):
+            # Process the text
+            processed = to_english(final_text)
+            emotion = detect_emotion(processed)
+            
+            # Show Results
+            st.subheader("Results")
+            st.write(f"**English Translation:** {processed}")
+            st.write(f"**Detected Emotion:** {emotion}")
+            
+            # Add your feedback logic here
+            st.success("Analysis complete!")
+    else:
+        st.warning("Please record audio or type an answer first!")# ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
     st.title("📈 Performance Dashboard")
     show_graph()
