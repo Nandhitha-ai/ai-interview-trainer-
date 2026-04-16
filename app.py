@@ -91,7 +91,7 @@ questions = [
 ]
 
 # ---------------- AI MODELS ----------------
-emotion_model = pipeline("sentiment-analysis")
+emotion_model = pipeline("sentiment-analysis",device=-1)
 chatbot = pipeline("text-generation", model="gpt2")
 
 # ---------------- FUNCTIONS ----------------
