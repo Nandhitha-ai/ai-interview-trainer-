@@ -44,7 +44,7 @@ authenticator = stauth.Authenticate(
 )
 
 # 2. Now use it to hash the passwords
-hashed_passwords = authenticator.hasher.hash_passwords(passwords)
+hashed_passwords = authenticator.hasher(passwords)
 
 # 3. Create the real credentials with the hashed passwords
 credentials = {
