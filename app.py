@@ -30,21 +30,34 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- LOGIN ----------------
+# ---------------- LOGIN ---------------
 names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 
-hashed_passwords = stauth.Hasher().hash(passwords[0])
+config = {
+    "usernames": {
+        usernames[0]: {
+            "name": names[0],
+            "password": stauth.Hasher([passwords[0]]).generate()[0]
+        }
+    },
+    "cookie": {
+        "expiry_days": 1,
+        "key": "some_signature_key",
+        "name": "interview_cookie"
+    }
+}
 
 authenticator = stauth.Authenticate(
-    {"usernames": {usernames[0]: {"name": names[0], "password": hashed_passwords}}},
-    "interview_cookie", 
-    "abcdef", 
-    cookie_expiry_days=1
+    config['usernames'], 
+    config['cookie']['name'], 
+    config['cookie']['key'], 
+    config['cookie']['expiry_days']
 )
-name, auth_status, username = authenticator.login("Login", "main")
 
+# This line calls the login box on the screen
+name, auth_status, username = authenticator.login(location='main')
 if auth_status != True:
     st.warning("Please login")
     st.stop()
