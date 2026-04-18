@@ -35,27 +35,16 @@ names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 
-# This dictionary format is REQUIRED by the new library version
-credentials = {
-    "usernames": {
-        usernames[0]: {
-            "name": names[0],
-            "password": stauth.Hasher(passwords).generate()[0]
-        }
-    }
-}
-
-# Fixes the "TypeError: cookie_expiry_days" you saw earlier
 authenticator = stauth.Authenticate(
-    credentials,
-    "interview_cookie",
+    names,
+    usernames,
+    passwords,   # 👈 directly using passwords
+    "interview_app",
     "abcdef",
     cookie_expiry_days=1
 )
 
-# Fixes the "ValueError: Location must be one of 'main' or 'sidebar'"
-name, auth_status, username = authenticator.login(location='main')
-# --- END OF REPLACEMENT ---
+name, auth_status, username = authenticator.login("Login", "main")
 if auth_status != True:
     st.warning("Please login")
     st.stop()
