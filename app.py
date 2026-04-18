@@ -38,10 +38,11 @@ passwords = ["1234"]
 hashed_passwords = stauth.Hasher().hash(passwords[0])
 
 authenticator = stauth.Authenticate(
-    names, usernames, hashed_passwords,
-    "interview_app", "abcdef", cookie_expiry_days=1
+    {"usernames": {usernames[0]: {"name": names[0], "password": hashed_passwords}}},
+    "interview_cookie", 
+    "abcdef", 
+    cookie_expiry_days=1
 )
-
 name, auth_status, username = authenticator.login("Login", "main")
 
 if auth_status != True:
