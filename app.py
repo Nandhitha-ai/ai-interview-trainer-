@@ -42,7 +42,7 @@ if not st.session_state.logged_in:
     password = st.text_input("Password", type="password")
 
     if st.button("Login"):
-        if username == "user1" and password == "1234":
+    if username == "user1" and password == "1234":
             
 names = ["Nandhitha"]
 usernames = ["user1"]
