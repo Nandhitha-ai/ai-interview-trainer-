@@ -169,23 +169,33 @@ if menu == "🏠 Home":
 
     with col2:
         analyze = st.button("🚀 Analyze")
-    if analyze and answer:
-        processed = to_english(current_answer)
+   if analyze:
+    # 1. Check if there is text or audio to analyze
+    if answer or 'audio_data' in st.session_state:
+        with st.spinner("Analyzing your response..."):
+            # If audio exists, you might need to transcribe it first
+            # processed = to_english(transcribed_text) 
+            
+            # 2. Run your AI analysis models
+            processed = to_english(answer)
+            emotion = detect_emotion(processed)
+            score = calculate_score(processed)
 
-        emotion = detect_emotion(processed)
-        score = calculate_score(processed)
+            # 3. Display the results
+            st.markdown("### 📊 Result")
+            st.success(f"Emotion: {to_tamil(emotion)}")
+            st.info(f"Score: {score}")
 
-        st.markdown("### 📊 Result")
-        st.success(f"Emotion: {to_tamil(emotion)}")
-        st.info(f"Score: {score}")
-
-        if score < 20:
-            st.warning("Improve your answer")
-        else:
-            st.success("Good job!")
-
-        save_data(question, answer, emotion, score)
-
+            # 4. Give feedback based on the score
+            if score < 20:
+                st.warning("Improve your answer")
+            else:
+                st.success("Good job!")
+                
+            # Save the data
+            save_data(question, answer, emotion, score)
+    else:
+        st.error("Please provide an answer or record audio first!")
 # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
     st.title("📈 Performance Dashboard")
