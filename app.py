@@ -51,30 +51,7 @@ if not st.session_state.logged_in:
            st.rerun()
         else:
            st.error("Invalid username or password")
-    st.stop()#this prevents the rest of the app from loading until login
-
-authenticator = stauth.Authenticate(
-    credentials,
-    "interview_cookie",
-    "abcdef",
-    cookie_expiry_days=1
-)
-
-# Fixes: Location must be 'main' or 'sidebar'
-name, auth_status, username = authenticator.login(location='main')
-
-if auth_status:
-            
-            st.session_state.logged_in = True
-            st.success("Login successful")
-            st.rerun()
-elif auth_status == False:
-            st.error("Invalid username or password")
-elif auth_status == None:
-            st.warning("Please enter your username and password")
-    # This must be at the far left margin
-st.stop()
-    
+    st.stop()#this prevents the rest of the app from loading until login    
         
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🎤 AI Trainer")
