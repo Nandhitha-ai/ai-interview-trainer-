@@ -31,26 +31,23 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 """, unsafe_allow_html=True)
 
 # ---------------- LOGIN ---------------
-names = ["Nandhitha"]
-usernames = ["user1"]
-passwords = ["1234"]
+import streamlit_authenticator as stauth
+
+credentials = {
+    "usernames": {
+        "user1": {
+            "name": "Nandhitha",
+            "password": "1234"
+        }
+    }
+}
 
 authenticator = stauth.Authenticate(
-    names,
-    usernames,
-    passwords,   # 👈 directly using passwords
+    credentials,
     "interview_app",
     "abcdef",
     cookie_expiry_days=1
 )
-
-name, auth_status, username = authenticator.login("Login", "main")
-if auth_status != True:
-    st.warning("Please login")
-    st.stop()
-
-st.success(f"Welcome {name}")
-
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🎤 AI Trainer")
 menu = st.sidebar.radio("Navigation",
