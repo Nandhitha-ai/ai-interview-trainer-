@@ -10,6 +10,22 @@ from transformers import pipeline
 from streamlit_mic_recorder import mic_recorder
 import streamlit as st
 import random
+import time
+
+# --- 1. INITIALIZE SESSION STATE (Put it here!) ---
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "start_time" not in st.session_state:
+    st.session_state.start_time = None
+
+# --- 2. YOUR DICTIONARY ---
+ROLE_QUESTIONS = {
+    "Software Developer": {
+        "Python/Backend": ["..."],
+        # ... the rest of your questions
+import streamlit as st
+import random
 
 # --- PART 1: THE DATA ---
 # This is just a dictionary. It doesn't show up on screen yet.
@@ -99,34 +115,26 @@ with st.sidebar:
 st.title(f"👋 Welcome, {st.session_state.user_display_name}!")
 st.write("Pick a category to start your interview practice.")
 st.divider()
-# --- PART 2: THE UI (Add this after the Welcome message) ---
+# 1. Create a combined list of all roles and streams
+# This creates a list like: ["Software Developer - Python/Backend", "Data Analyst - Statistics"]
+combined_options = []
+for role, streams in ROLE_QUESTIONS.items():
+    for stream in streams.keys():
+        combined_options.append(f"{role} - {stream}")
 
-# 1. Create the dropdown menus
-col1, col2 = st.columns(2)
+# 2. Show only ONE selectbox
+selected_path = st.selectbox("🎯 Choose your Interview Path:", combined_options)
 
-with col1:
-    # This looks at the keys in your ROLE_QUESTIONS dictionary
-    role = st.selectbox("🎯 Target Role", list(ROLE_QUESTIONS.keys()))
+# 3. Split the choice back into Role and Stream to get the questions
+# If they pick "Data Analyst - Statistics", this splits it back apart
+role_choice, stream_choice = selected_path.split(" - ")
+current_list = ROLE_QUESTIONS[role_choice][stream_choice]
 
-with col2:
-    # This looks at the specific streams for the role you picked
-    streams = list(ROLE_QUESTIONS[role].keys())
-    stream = st.selectbox("📧 Stream", streams)
-
-# 2. Pick a random question from that specific category
-current_list = ROLE_QUESTIONS[role][stream]
-
-# This button lets the user skip to a different question in that stream
+# 4. Pick and show the question
 if 'active_q' not in st.session_state or st.button("🔄 Change Question"):
     st.session_state.active_q = random.choice(current_list)
 
-# 3. Show the question in a blue info box
 st.info(f"**Interview Question:** {st.session_state.active_q}")
-# ---------------- SIDEBAR ----------------
-st.sidebar.title("🎤 AI Trainer")
-menu = st.sidebar.radio("Navigation",
-                        ["🏠 Home", "📊 Performance", "🤖 Chatbot", "📷 Camera"])
-
 # ---------------- LANGUAGE ----------------
 translator = Translator()
 language = st.selectbox("Language", ["English", "Tamil"])
