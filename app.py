@@ -62,15 +62,20 @@ authenticator = stauth.Authenticate(
 
 # Fixes: Location must be 'main' or 'sidebar'
 name, auth_status, username = authenticator.login(location='main')
-# --- END OF REPLACEMENT ---
+
+if auth_status:
             
             st.session_state.logged_in = True
             st.success("Login successful")
             st.rerun()
-        else:
+elif auth_status == False:
             st.error("Invalid username or password")
-
-    st.stop()
+elif auth_status == None:
+            st.warning("Please enter your username and password")
+    # This must be at the far left margin
+st.stop()
+    
+        
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🎤 AI Trainer")
 menu = st.sidebar.radio("Navigation",
