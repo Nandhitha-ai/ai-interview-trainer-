@@ -43,17 +43,15 @@ if not st.session_state.logged_in:
     password = st.text_input("Password", type="password")
 
 # --- Starting at Line 44 ---
-if st.button("Login"):
+    if st.button("Login"):
     # Everything below is indented by 4 spaces
-    if username == "user1" and password == "1234":
-        st.session_state.logged_in = True
-        st.success("Login successful")
-        st.rerun()
-    else:
-        st.error("Invalid username or password")
-        }
-    }
-}
+        if username == "user1" and password == "1234":
+           st.session_state.logged_in = True
+           st.success("Login successful")
+           st.rerun()
+        else:
+           st.error("Invalid username or password")
+    st.stop()#this prevents the rest of the app from loading until login
 
 authenticator = stauth.Authenticate(
     credentials,
