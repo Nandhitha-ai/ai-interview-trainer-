@@ -43,6 +43,32 @@ if not st.session_state.logged_in:
 
     if st.button("Login"):
         if username == "user1" and password == "1234":
+            
+names = ["Nandhitha"]
+usernames = ["user1"]
+passwords = ["1234"]
+
+# --- PASTE THE NEW BLOCK HERE ---
+hashed_passwords = stauth.Hasher(passwords).generate()
+
+credentials = {
+    "usernames": {
+        usernames[0]: {
+            "name": names[0],
+            "password": hashed_passwords[0]
+        }
+    }
+}
+
+authenticator = stauth.Authenticate(
+    credentials,
+    "interview_cookie",
+    "abcdef",
+    cookie_expiry_days=1
+)
+
+# This line MUST follow the block above
+name, auth_status, username = authenticator.login(location='main')
             st.session_state.logged_in = True
             st.success("Login successful")
             st.rerun()
