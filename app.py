@@ -31,32 +31,37 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 """, unsafe_allow_html=True)
 
 # ---------------- LOGIN ---------------
+# 1. Define your user data first
 names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 
-config = {
+# 2. Use the new way to hash passwords
+# This fixes the "Hasher() takes no arguments" error
+hashed_passwords = stauth.Hasher(passwords).generate()
+
+# 3. Create the configuration dictionary
+# This fixes the "Authenticate got an unexpected keyword" error
+credentials = {
     "usernames": {
         usernames[0]: {
             "name": names[0],
-            "password": stauth.Hasher([passwords[0]]).generate()[0]
+            "password": hashed_passwords[0]
         }
-    },
-    "cookie": {
-        "expiry_days": 1,
-        "key": "some_signature_key",
-        "name": "interview_cookie"
     }
 }
 
+# 4. Setup the Authenticator
+# We provide the credentials, cookie name, key, and expiry
 authenticator = stauth.Authenticate(
-    config['usernames'], 
-    config['cookie']['name'], 
-    config['cookie']['key'], 
-    config['cookie']['expiry_days']
+    credentials,
+    "interview_cookie",
+    "abcdef",
+    cookie_expiry_days=1
 )
 
-# This line calls the login box on the screen
+# 5. Call the login method with the 'location' keyword
+# This fixes the "Location must be one of 'main' or 'sidebar'" error
 name, auth_status, username = authenticator.login(location='main')
 if auth_status != True:
     st.warning("Please login")
