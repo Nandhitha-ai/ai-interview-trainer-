@@ -31,23 +31,25 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 """, unsafe_allow_html=True)
 
 # ---------------- LOGIN ---------------
-import streamlit_authenticator as stauth
+# -------- SIMPLE LOGIN --------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-credentials = {
-    "usernames": {
-        "user1": {
-            "name": "Nandhitha",
-            "password": "1234"
-        }
-    }
-}
+if not st.session_state.logged_in:
+    st.title("🔐 Login")
 
-authenticator = stauth.Authenticate(
-    credentials,
-    "interview_app",
-    "abcdef",
-    cookie_expiry_days=1
-)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        if username == "user1" and password == "1234":
+            st.session_state.logged_in = True
+            st.success("Login successful")
+            st.rerun()
+        else:
+            st.error("Invalid username or password")
+
+    st.stop()
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🎤 AI Trainer")
 menu = st.sidebar.radio("Navigation",
@@ -76,8 +78,7 @@ questions = [
 ]
 
 # ---------------- AI MODELS ----------------
-emotion_model = pipeline("sentiment-analysis")
-chatbot = pipeline("text-generation", model="gpt2")
+emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncased")
 
 # ---------------- FUNCTIONS ----------------
 
