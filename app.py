@@ -7,6 +7,7 @@ import cv2
 import streamlit_authenticator as stauth
 from googletrans import Translator
 from transformers import pipeline
+from streamlit_mic_recorder import mic_recorder
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -43,14 +44,15 @@ if not st.session_state.logged_in:
 
     if st.button("Login"):
     if username == "user1" and password == "1234":
-            
+        # --- REPLACEMENT LOGIN BLOCK ---
 names = ["Nandhitha"]
 usernames = ["user1"]
 passwords = ["1234"]
 
-# --- PASTE THE NEW BLOCK HERE ---
+# Fixes: Hasher() takes no arguments
 hashed_passwords = stauth.Hasher(passwords).generate()
 
+# Fixes: cookie_expiry_days error
 credentials = {
     "usernames": {
         usernames[0]: {
@@ -67,8 +69,10 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-# This line MUST follow the block above
+# Fixes: Location must be 'main' or 'sidebar'
 name, auth_status, username = authenticator.login(location='main')
+# --- END OF REPLACEMENT ---
+            
             st.session_state.logged_in = True
             st.success("Login successful")
             st.rerun()
@@ -169,28 +173,29 @@ def start_camera():
 
 # ---------------- HOME ----------------
 if menu == "🏠 Home":
-
     st.title("🎤 AI Interview Trainer")
     question = random.choice(questions)
-
-    st.markdown("### 💬 Question")
     st.info(question)
 
     answer = st.text_area("Your Answer", height=150)
-
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("🎤 Speak"):
-            answer = voice_input()
-            st.write("You said:", answer)
-            st.session_state.saved_answer=answer#Add this line to save the text
-            st.write("You said:", answer)
-    
+        # REPLACE THE OLD BUTTON WITH THIS:
+        audio = mic_recorder(
+            start_prompt="Record Answer 🎙️",
+            stop_prompt="Stop 🛑",
+            key='recorder'
+        )
+
+        if audio:
+            st.audio(audio['bytes'])
+            # Save the audio bytes to session state so 'Analyze' can see it
+            st.session_state.audio_data = audio['bytes']
+            st.write("Audio recorded successfully!")
 
     with col2:
         analyze = st.button("🚀 Analyze")
-
     if analyze and answer:
         processed = to_english(current_answer)
 
