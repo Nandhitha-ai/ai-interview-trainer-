@@ -8,6 +8,29 @@ import streamlit_authenticator as stauth
 from googletrans import Translator
 from transformers import pipeline
 from streamlit_mic_recorder import mic_recorder
+import streamlit as st
+import random
+
+# --- PART 1: THE DATA ---
+# This is just a dictionary. It doesn't show up on screen yet.
+ROLE_QUESTIONS = {
+    "Software Developer": {
+        "Python/Backend": [
+            "Explain the difference between a list and a tuple.",
+            "What are decorators in Python?"
+        ],
+        "Web Frontend": [
+            "How would you optimize a Streamlit app?",
+            "What is state management?"
+        ]
+    },
+    "Data Analyst": {
+        "Statistics": [
+            "What is a P-value?",
+            "Explain the normal distribution."
+        ]
+    }
+}
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
@@ -32,27 +55,73 @@ h1, h2, h3 { color: #38bdf8; text-align: center; }
 """, unsafe_allow_html=True)
 
 # ---------------- LOGIN ---------------
-# -------- SIMPLE LOGIN --------
+# 1. Initialize session state to track login status
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "user_display_name" not in st.session_state:
+    st.session_state.user_display_name = ""
 
+# 2. LOGIN PAGE UI
 if not st.session_state.logged_in:
-    st.title("🔐 Login")
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-# --- Starting at Line 44 ---
-    if st.button("Login"):
-    # Everything below is indented by 4 spaces
-        if username == "user1" and password == "1234":
-           st.session_state.logged_in = True
-           st.success("Login successful")
-           st.rerun()
-        else:
-           st.error("Invalid username or password")
-    st.stop()#this prevents the rest of the app from loading until login    
+    st.title("🔐 AI Interview Trainer Login")
+    
+    with st.container():
+        email = st.text_input("Email Address", placeholder="name@example.com")
+        password = st.text_input("Password", type="password")
         
+        if st.button("Login", use_container_width=True):
+            # Check credentials (replace with your database logic if needed)
+            if email == "user@gmail.com" and password == "1234":
+                st.session_state.logged_in = True
+                
+                # --- NEW FEATURE: Name Extraction ---
+                # Example: suresh_kumar@gmail.com -> Suresh Kumar
+                display_name = email.split('@')[0].replace('_', ' ').replace('.', ' ').title()
+                st.session_state.user_display_name = display_name
+                
+                st.success(f"Welcome back, {display_name}!")
+                st.rerun()
+            else:
+                st.error("Invalid email or password. Please try again.")
+    
+    # This stops the rest of the app from loading until the user logs in
+    st.stop()
+
+# 3. LOGOUT FEATURE (In the Sidebar)
+with st.sidebar:
+    st.write(f"👤 Logged in as: **{st.session_state.user_display_name}**")
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user_display_name = ""
+        st.rerun()
+
+# 4. MAIN APP WELCOME MESSAGE
+st.title(f"👋 Welcome, {st.session_state.user_display_name}!")
+st.write("Pick a category to start your interview practice.")
+st.divider()
+# --- PART 2: THE UI (Add this after the Welcome message) ---
+
+# 1. Create the dropdown menus
+col1, col2 = st.columns(2)
+
+with col1:
+    # This looks at the keys in your ROLE_QUESTIONS dictionary
+    role = st.selectbox("🎯 Target Role", list(ROLE_QUESTIONS.keys()))
+
+with col2:
+    # This looks at the specific streams for the role you picked
+    streams = list(ROLE_QUESTIONS[role].keys())
+    stream = st.selectbox("📧 Stream", streams)
+
+# 2. Pick a random question from that specific category
+current_list = ROLE_QUESTIONS[role][stream]
+
+# This button lets the user skip to a different question in that stream
+if 'active_q' not in st.session_state or st.button("🔄 Change Question"):
+    st.session_state.active_q = random.choice(current_list)
+
+# 3. Show the question in a blue info box
+st.info(f"**Interview Question:** {st.session_state.active_q}")
 # ---------------- SIDEBAR ----------------
 st.sidebar.title("🎤 AI Trainer")
 menu = st.sidebar.radio("Navigation",
