@@ -42,22 +42,15 @@ if not st.session_state.logged_in:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    if st.button("Login"):
+# --- Starting at Line 44 ---
+if st.button("Login"):
+    # Everything below is indented by 4 spaces
     if username == "user1" and password == "1234":
-        # --- REPLACEMENT LOGIN BLOCK ---
-names = ["Nandhitha"]
-usernames = ["user1"]
-passwords = ["1234"]
-
-# Fixes: Hasher() takes no arguments
-hashed_passwords = stauth.Hasher(passwords).generate()
-
-# Fixes: cookie_expiry_days error
-credentials = {
-    "usernames": {
-        usernames[0]: {
-            "name": names[0],
-            "password": hashed_passwords[0]
+        st.session_state.logged_in = True
+        st.success("Login successful")
+        st.rerun()
+    else:
+        st.error("Invalid username or password")
         }
     }
 }
