@@ -87,7 +87,7 @@ emotion_model = pipeline("sentiment-analysis",model="distilbert-base-uncased")
 
 def detect_emotion(text):
     result = emotion_model(text)[0]['label']
-    return "Confident 😊" if result == "POSITIVE" else "Nervous 😟"
+    return "Confident 😊" if result.upper() == "POSITIVE" else "Nervous 😟"
 
 def calculate_score(text):
     words = text.split()
@@ -176,10 +176,13 @@ if menu == "🏠 Home":
                 processed = to_english(answer)
                 emotion = detect_emotion(processed)
                 score = calculate_score(processed)
+                with st.expander("See Detailed Analysis"):
+                    st.write(f"Refined Answer: {processed}")
+                    st.write(f"Detected Emotion: {to_tamil(emotion)}")
 
-                st.markdown("### 📊 Result")
-                st.success(f"Emotion: {to_tamil(emotion)}")
-                st.info(f"Score: {score}")
+                    st.markdown("### 📊 Result")
+                    st.success(f"Emotion: {to_tamil(emotion)}")
+                    st.info(f"Score: {score}")
 
                 if score < 20:
                     st.warning("Improve your answer")
