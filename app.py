@@ -158,12 +158,15 @@ if menu == "🏠 Home":
         if st.button("🎤 Speak"):
             answer = voice_input()
             st.write("You said:", answer)
+            st.session_state.saved_answer=answer#Add this line to save the text
+            st.write("You said:", answer)
+    
 
     with col2:
         analyze = st.button("🚀 Analyze")
 
     if analyze and answer:
-        processed = to_english(answer)
+        processed = to_english(current_answer)
 
         emotion = detect_emotion(processed)
         score = calculate_score(processed)
