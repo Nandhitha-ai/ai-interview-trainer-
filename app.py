@@ -169,10 +169,10 @@ if menu == "🏠 Home":
 
     with col2:
         analyze = st.button("🚀 Analyze")
-   if analyze:
+        if analyze:
     # 1. Check if there is text or audio to analyze
-    if answer or 'audio_data' in st.session_state:
-        with st.spinner("Analyzing your response..."):
+            if answer or 'audio_data' in st.session_state:
+            with st.spinner("Analyzing your response..."):
             # If audio exists, you might need to transcribe it first
             # processed = to_english(transcribed_text) 
             
