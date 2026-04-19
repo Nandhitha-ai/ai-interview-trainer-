@@ -315,14 +315,6 @@ def start_camera():
     cv2.destroyAllWindows()
 
 # ---------------- HOME ----------------
-if menu == "🏠 Home":
-    st.title("🎤 AI Interview Trainer")
-    question = random.choice(questions)
-    st.info(question)
-
-    answer = st.text_area("Your Answer", height=150)
-    col1, col2 = st.columns(2)
-
     with col1:
         # REPLACE THE OLD BUTTON WITH THIS:
         audio = mic_recorder(
