@@ -123,31 +123,56 @@ if not st.session_state.logged_in:
                 st.error("Invalid email or password.")
 
 # 2. If logged in, handle the different pages (Welcome -> Role Selection)
+# --- THIS GOES AFTER YOUR LOGIN/TAB CODE ---
 else:
-    # 1. SIDEBAR NAVIGATION
+    # 1. This creates the 'menu' variable so the error disappears!
     with st.sidebar:
         st.write(f"👤 **Logged in as:** {st.session_state.user_display_name}")
-        menu = st.selectbox("Menu", ["🏠 Home", "🎯 Interview", "📈 Dashboard"])
-        
+        menu = st.selectbox("Menu", ["🏠 Home", "🎯 Interview"])
         st.divider()
         if st.button("Logout"):
             st.session_state.logged_in = False
-            st.session_state.user_display_name = ""
-            st.session_state.page = "login"
             st.rerun()
 
     # 2. HOME PAGE
     if menu == "🏠 Home":
         st.title(f"✨ Welcome, {st.session_state.user_display_name}!")
-        st.write("Your account is ready. Let's get started with your practice.")
-        if st.button("Start Practice ➡️"):
-            # This logic just tells the user what to do next
-            st.info("Please select 'Interview' from the sidebar menu to begin!")
+        st.write("Your account is ready. Select 'Interview' from the sidebar to start.")
 
     # 3. INTERVIEW PAGE
     elif menu == "🎯 Interview":
-        st.title("🎯 Role Selection")
+        st.title("🎯 Interview Practice")
         
+        # Combine Roles and Streams for the dropdown
+        options = []
+        for role, streams in ROLE_QUESTIONS.items():
+            for stream in streams:
+                options.append(f"{role} - {stream}")
+        
+        choice = st.selectbox("Pick your path:", options)
+        role_part, stream_part = choice.split(" - ")
+        questions = ROLE_QUESTIONS[role_part][stream_part]
+
+        if st.button("Get New Question"):
+            st.session_state.current_q = random.choice(questions)
+            st.session_state.start_time = None
+
+        if "current_q" in st.session_state:
+            st.info(f"**Question:** {st.session_state.current_q}")
+            
+            # --- TIMER LOGIC ---
+            if st.button("⏱️ Start 60s Timer"):
+                st.session_state.start_time = time.time()
+
+            if st.session_state.start_time:
+                elapsed = time.time() - st.session_state.start_time
+                remaining = max(0, 60 - int(elapsed))
+                if remaining > 0:
+                    st.metric("Time Remaining", f"{remaining}s")
+                    time.sleep(1)
+                    st.rerun()
+                else:
+                    st.error("⏰ Time's Up!")
         # --- ROLE SELECTION LOGIC ---
         combined_options = []
         for role_name, streams in ROLE_QUESTIONS.items():
