@@ -124,25 +124,61 @@ if not st.session_state.logged_in:
 
 # 2. If logged in, handle the different pages (Welcome -> Role Selection)
 else:
-    if st.session_state.page == "welcome":
-        st.title(f"✨ Welcome, {st.session_state.user_display_name}!")
-        st.write("Your account is ready. Let's get started with your practice.")
-        if st.button("Next ➡️"):
-            st.session_state.page = "role_selection"
+    # 1. SIDEBAR NAVIGATION
+    with st.sidebar:
+        st.write(f"👤 **Logged in as:** {st.session_state.user_display_name}")
+        menu = st.selectbox("Menu", ["🏠 Home", "🎯 Interview", "📈 Dashboard"])
+        
+        st.divider()
+        if st.button("Logout"):
+            st.session_state.logged_in = False
+            st.session_state.user_display_name = ""
+            st.session_state.page = "login"
             st.rerun()
 
-    elif st.session_state.page == "role_selection":
-        # --- PASTE YOUR ROLE DROPDOWN & TIMER CODE HERE ---
-        st.title("🎯 Role Selection")
-        # (This is where you put the 'Choose your Interview Path' code)
-# 3. LOGOUT FEATURE (In the Sidebar)
-with st.sidebar:
-    st.write(f"👤 Logged in as: **{st.session_state.user_display_name}**")
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.user_display_name = ""
-        st.rerun()
+    # 2. HOME PAGE
+    if menu == "🏠 Home":
+        st.title(f"✨ Welcome, {st.session_state.user_display_name}!")
+        st.write("Your account is ready. Let's get started with your practice.")
+        if st.button("Start Practice ➡️"):
+            # This logic just tells the user what to do next
+            st.info("Please select 'Interview' from the sidebar menu to begin!")
 
+    # 3. INTERVIEW PAGE
+    elif menu == "🎯 Interview":
+        st.title("🎯 Role Selection")
+        
+        # --- ROLE SELECTION LOGIC ---
+        combined_options = []
+        for role_name, streams in ROLE_QUESTIONS.items():
+            for stream_name in streams.keys():
+                combined_options.append(f"{role_name} - {stream_name}")
+
+        selected_path = st.selectbox("🎯 Choose your Interview Path:", combined_options)
+        role_choice, stream_choice = selected_path.split(" - ")
+        current_list = ROLE_QUESTIONS[role_choice][stream_choice]
+
+        if 'active_q' not in st.session_state or st.button("🔄 Change Question"):
+            st.session_state.active_q = random.choice(current_list)
+            st.session_state.start_time = None 
+
+        st.info(f"**Interview Question:** {st.session_state.active_q}")
+
+        # --- TIMER LOGIC ---
+        timer_placeholder = st.empty()
+        if st.button("⏱️ Start 60s Timer"):
+            st.session_state.start_time = time.time()
+
+        if st.session_state.get("start_time"):
+            elapsed = time.time() - st.session_state.start_time
+            remaining = max(0, 60 - int(elapsed))
+            if remaining > 0:
+                timer_placeholder.metric("Time Remaining", f"{remaining}s")
+                time.sleep(1)
+                st.rerun()
+            else:
+                timer_placeholder.error("⏰ Time's Up!")
+                st.session_state.start_time = None
 # 4. MAIN APP WELCOME MESSAGE
 st.title(f"👋 Welcome, {st.session_state.user_display_name}!")
 st.write("Pick a category to start your interview practice.")
