@@ -1,6 +1,25 @@
 import streamlit as st
 import random
 import pandas as pd
+import os
+
+DB_FILE = "users_db.csv"
+
+# Create the database file if it doesn't exist
+if not os.path.exists(DB_FILE):
+    df = pd.DataFrame(columns=["email", "password", "name"])
+    df.to_csv(DB_FILE, index=False)
+
+def save_user(email, password, name):
+    df = pd.read_csv(DB_FILE)
+    new_user = pd.DataFrame([[email, password, name]], columns=["email", "password", "name"])
+    df = pd.concat([df, new_user], ignore_index=True)
+    df.to_csv(DB_FILE, index=False)
+
+def verify_user(email, password):
+    df = pd.read_csv(DB_FILE)
+    user = df[(df['email'] == email) & (df['password'] == str(password))]
+    return user if not user.empty else None
 import matplotlib.pyplot as plt
 import speech_recognition as sr
 import cv2
@@ -68,33 +87,54 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_display_name" not in st.session_state:
     st.session_state.user_display_name = ""
-
-# 2. LOGIN PAGE UI
-if not st.session_state.logged_in:
-    st.title("🔐 AI Interview Trainer Login")
     
-    with st.container():
-        email = st.text_input("Email Address", placeholder="name@example.com")
-        password = st.text_input("Password", type="password")
-        
-        if st.button("Login", use_container_width=True):
-            # Check credentials (replace with your database logic if needed)
-            if email == "user@gmail.com" and password == "1234":
+# --- STEP 3: THE MULTI-PAGE UI ---
+
+# 1. If not logged in, show Login/Signup tabs
+if not st.session_state.logged_in:
+    st.title("🔐 AI Interview Trainer")
+    tab1, tab2 = st.tabs(["Login", "Create Account"])
+
+    with tab2: # SIGN UP
+        st.subheader("Create a New Account")
+        new_name = st.text_input("Full Name")
+        new_email = st.text_input("Email", key="signup_email")
+        new_pw = st.text_input("Create Password", type="password")
+        if st.button("Register"):
+            if new_email and new_pw and new_name:
+                save_user(new_email, new_pw, new_name)
+                st.success("Account created! Now please go to the Login tab.")
+            else:
+                st.warning("Please fill in all fields.")
+
+    with tab1: # LOGIN
+        st.subheader("Login to your Account")
+        email_input = st.text_input("Email", key="login_email")
+        pw_input = st.text_input("Password", type="password", key="login_pw")
+        if st.button("Login"):
+            user_data = verify_user(email_input, pw_input)
+            if user_data is not None:
+                # Get name from database instead of extraction
+                st.session_state.user_display_name = user_data.iloc[0]['name']
                 st.session_state.logged_in = True
-                
-                # --- NEW FEATURE: Name Extraction ---
-                # Example: suresh_kumar@gmail.com -> Suresh Kumar
-                display_name = email.split('@')[0].replace('_', ' ').replace('.', ' ').title()
-                st.session_state.user_display_name = display_name
-                
-                st.success(f"Welcome back, {display_name}!")
+                st.session_state.page = "welcome" 
                 st.rerun()
             else:
-                st.error("Invalid email or password. Please try again.")
-    
-    # This stops the rest of the app from loading until the user logs in
-    st.stop()
+                st.error("Invalid email or password.")
 
+# 2. If logged in, handle the different pages (Welcome -> Role Selection)
+else:
+    if st.session_state.page == "welcome":
+        st.title(f"✨ Welcome, {st.session_state.user_display_name}!")
+        st.write("Your account is ready. Let's get started with your practice.")
+        if st.button("Next ➡️"):
+            st.session_state.page = "role_selection"
+            st.rerun()
+
+    elif st.session_state.page == "role_selection":
+        # --- PASTE YOUR ROLE DROPDOWN & TIMER CODE HERE ---
+        st.title("🎯 Role Selection")
+        # (This is where you put the 'Choose your Interview Path' code)
 # 3. LOGOUT FEATURE (In the Sidebar)
 with st.sidebar:
     st.write(f"👤 Logged in as: **{st.session_state.user_display_name}**")
