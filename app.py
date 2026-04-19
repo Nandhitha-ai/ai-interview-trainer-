@@ -357,7 +357,7 @@ def start_camera():
 # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
     st.title("📈 Performance Dashboard")
-    st.write("Performance tracking coming soon")#Add this line so it's not empty!
+    st.info("Your practice history will appear here soon!")
     show_graph()
 
 # ---------------- CHATBOT ----------------
