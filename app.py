@@ -10,7 +10,7 @@ from transformers import pipeline
 from streamlit_mic_recorder import mic_recorder
 import streamlit as st
 import random
-import time
+import time #
 
 # --- 1. INITIALIZE SESSION STATE (Put it here!) ---
 if "logged_in" not in st.session_state:
@@ -18,14 +18,6 @@ if "logged_in" not in st.session_state:
 
 if "start_time" not in st.session_state:
     st.session_state.start_time = None
-
-# --- 2. YOUR DICTIONARY ---
-ROLE_QUESTIONS = {
-    "Software Developer": {
-        "Python/Backend": ["..."],
-        # ... the rest of your questions
-import streamlit as st
-import random
 
 # --- PART 1: THE DATA ---
 # This is just a dictionary. It doesn't show up on screen yet.
