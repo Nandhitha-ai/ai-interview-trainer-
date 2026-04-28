@@ -358,14 +358,14 @@ def start_camera():
         else:
             st.error("Please provide an answer or record audio first!")
 # ---------------- PERFORMANCE ----------------
-elif menu == "📊 Performance":
-    st.title("📊 Performance Tracking")
-    st.write("This feature is under development. Check back soon!")
+    elif menu == "📊 Performance":
+        st.title("📊 Performance Tracking")
+        st.write("This feature is under development. Check back soon!")
 # ---------------- CHATBOT ----------------
-elif menu == "🤖 Chatbot":
-    st.title("🤖 AI Interviewer")
+    elif menu == "🤖 Chatbot":
+        st.title("🤖 AI Interviewer")
 
-    user_input = st.text_input("Ask something")
+        user_input = st.text_input("Ask something")
 
     if st.button("Send"):
         reply = chatbot_reply(user_input)
