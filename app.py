@@ -359,8 +359,8 @@ def start_camera():
             st.error("Please provide an answer or record audio first!")
 # ---------------- PERFORMANCE ----------------
 elif menu == "📊 Performance":
-    st.title("📊 Performance Dashboard")
-    st.write("Your interview progress and history will appear here soon!")
+    st.title("📊 Performance Tracking")
+    st.write("This feature is under development. Check back soon!")
 # ---------------- CHATBOT ----------------
 elif menu == "🤖 Chatbot":
     st.title("🤖 AI Interviewer")
