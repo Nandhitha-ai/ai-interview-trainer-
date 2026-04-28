@@ -173,37 +173,40 @@ else:
                     st.rerun()
                 else:
                     st.error("⏰ Time's Up!")
-        # --- ROLE SELECTION LOGIC ---
-        combined_options = []
-        for role_name, streams in ROLE_QUESTIONS.items():
-            for stream_name in streams.keys():
-                combined_options.append(f"{role_name} - {stream_name}")
+                    # --- STEP 1: ROLE SELECTION ---
+combined_options = []
+for role_name, streams in ROLE_QUESTIONS.items():
+    for stream_name in streams.keys():
+        combined_options.append(f"{role_name} - {stream_name}")
 
-        selected_path = st.selectbox("🎯 Choose your Interview Path:", combined_options)
-        role_choice, stream_choice = selected_path.split(" - ")
-        current_list = ROLE_QUESTIONS[role_choice][stream_choice]
+selected_path = st.selectbox("🎯 Choose your Interview Path:", combined_options)
+role_choice, stream_choice = selected_path.split(" - ")
+current_list = ROLE_QUESTIONS[role_choice][stream_choice]
 
-        if 'active_q' not in st.session_state or st.button("🔄 Change Question"):
-            st.session_state.active_q = random.choice(current_list)
-            st.session_state.start_time = None 
+if 'active_q' not in st.session_state or st.button("🔄 Change Question"):
+    st.session_state.active_q = random.choice(current_list)
+    st.session_state.start_time = None # Reset timer for new question
 
-        st.info(f"**Interview Question:** {st.session_state.active_q}")
+st.info(f"**Interview Question:** {st.session_state.active_q}")
 
-        # --- TIMER LOGIC ---
-        timer_placeholder = st.empty()
-        if st.button("⏱️ Start 60s Timer"):
-            st.session_state.start_time = time.time()
+# --- STEP 2: THE TIMER ---
+timer_placeholder = st.empty()
 
-        if st.session_state.get("start_time"):
-            elapsed = time.time() - st.session_state.start_time
-            remaining = max(0, 60 - int(elapsed))
-            if remaining > 0:
-                timer_placeholder.metric("Time Remaining", f"{remaining}s")
-                time.sleep(1)
-                st.rerun()
-            else:
-                timer_placeholder.error("⏰ Time's Up!")
-                st.session_state.start_time = None
+if st.button("⏱️ Start 60s Timer"):
+    st.session_state.start_time = time.time()
+
+if st.session_state.start_time:
+    elapsed = time.time() - st.session_state.start_time
+    remaining = max(0, 60 - int(elapsed)) 
+    
+    if remaining > 0:
+        timer_placeholder.metric("Time Remaining", f"{remaining}s")
+        time.sleep(1) 
+        st.rerun()    
+    else:
+        timer_placeholder.error("⏰ Time's Up!")
+        st.session_state.start_time = None
+   
 # 4. MAIN APP WELCOME MESSAGE
 st.title(f"👋 Welcome, {st.session_state.user_display_name}!")
 st.write("Pick a category to start your interview practice.")
